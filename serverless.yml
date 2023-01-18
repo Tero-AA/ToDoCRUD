@@ -1,0 +1,64 @@
+service: ToDoCRUD
+frameworkVersion: "3"
+useDotenv: true
+
+provider:
+  name: aws
+  runtime: nodejs14.x
+  environment:
+    DYNAMODB_TABLE: ${env:DYNAMODB_TABLE}-${sls:stage}
+    REGION: ${env:REGION}
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:*
+      Resource: "arn:aws:dynamodb:${self:provider.environment.REGION}:*:table/${self:provider.environment.DYNAMODB_TABLE}"
+
+functions:
+  createTodo:
+    handler: src/todos/createTodo.createTodo
+    events:
+      - httpApi:
+          path: /todos
+          method: post
+
+  listTodos:
+    handler: src/todos/listTodos.listTodos
+    events:
+      - httpApi:
+          path: /todos
+          method: get
+
+  getTodo:
+    handler: src/todos/getTodo.getTodo
+    events:
+      - httpApi:
+          path: /todos/{id}
+          method: get
+  updateTodo:
+    handler: src/todos/updateTodo.updateTodo
+    events:
+      - httpApi:
+          path: /todos/{id}
+          method: put
+  deleteTodo:
+    handler: src/todos/deleteTodo.deleteTodo
+    events:
+      - httpApi:
+          path: /todos/{id}
+          method: delete
+
+resources:
+  Resources:
+    TodosDynamoDbTable:
+      Type: "AWS::DynamoDB::Table"
+      DeletionPolicy: Retain
+      Properties:
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        BillingMode: PAY_PER_REQUEST
+        TableName: ${self:provider.environment.DYNAMODB_TABLE}
