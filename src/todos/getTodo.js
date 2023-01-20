@@ -1,7 +1,7 @@
 "use strict";
 
-const AWS = require("aws-sdk");
-const dynamodb = new AWS.DynamoDB.DocumentClient();
+const { DynamoDB } = require("aws-sdk");
+const dynamodb = new DynamoDB.DocumentClient();
 
 module.exports.getTodo = async (event) => {
   const params = {

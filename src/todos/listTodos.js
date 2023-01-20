@@ -1,7 +1,7 @@
 "use strict";
 
-const AWS = require("aws-sdk");
-const dynamodb = new AWS.DynamoDB.DocumentClient();
+const { DynamoDB } = require("aws-sdk");
+const dynamodb = new DynamoDB.DocumentClient();
 
 module.exports.listTodos = async () => {
   const params = {
@@ -13,6 +13,10 @@ module.exports.listTodos = async () => {
     const todos = result.Items;
     return {
       statusCode: 200,
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Credentials": true,
+      },
       body: JSON.stringify(todos),
     };
   } catch (error) {

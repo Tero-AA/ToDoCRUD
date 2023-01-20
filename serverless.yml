@@ -14,13 +14,21 @@ provider:
         - dynamodb:*
       Resource: "arn:aws:dynamodb:${self:provider.environment.REGION}:*:table/${self:provider.environment.DYNAMODB_TABLE}"
 
+constructs:
+  create-todo-queue:
+    type: queue
+    worker:
+      handler: src/todos/createTodo.createTodos
+
 functions:
   createTodo:
-    handler: src/todos/createTodo.createTodo
+    handler: src/todos/createTodo.createTodoQueueTrigger
     events:
       - httpApi:
           path: /todos
           method: post
+    environment:
+      QUEUE_URL: ${construct:create-todo-queue.queueUrl}
 
   listTodos:
     handler: src/todos/listTodos.listTodos
@@ -62,3 +70,6 @@ resources:
             KeyType: HASH
         BillingMode: PAY_PER_REQUEST
         TableName: ${self:provider.environment.DYNAMODB_TABLE}
+
+plugins:
+  - serverless-lift
